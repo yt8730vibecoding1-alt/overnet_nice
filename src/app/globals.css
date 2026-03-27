@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #1e40af;
+  --color-primary-light: #3b82f6;
+  --color-star: #f59e0b;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+}
+
+/* iOS safe area */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
