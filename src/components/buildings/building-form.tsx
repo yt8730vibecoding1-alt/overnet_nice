@@ -58,7 +58,8 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
         toast.success('건물 정보가 수정되었습니다');
         router.push(`/buildings/${building.id}`);
       }
-    } catch {
+    } catch (error) {
+      console.error('Building save failed:', error);
       toast.error('저장에 실패했습니다');
     } finally {
       setLoading(false);

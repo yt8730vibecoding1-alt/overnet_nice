@@ -23,7 +23,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         <button
           type="button"
           onClick={() => onChange('')}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
+          className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center"
         >
           <X className="h-5 w-5 text-gray-400" />
         </button>

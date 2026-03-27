@@ -4,16 +4,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, ChevronUp, Plus, Pencil, Trash2, Network } from 'lucide-react';
 import { DongForm } from './dong-form';
+import { PhotoGrid } from '@/components/photos/photo-grid';
+import { PhotoUpload } from '@/components/photos/photo-upload';
 import { deleteDong } from '@/actions/dongs';
 import toast from 'react-hot-toast';
-import type { Dong } from '@/lib/supabase/types';
+import type { Dong, Photo } from '@/lib/supabase/types';
 
 interface DongListProps {
   buildingId: string;
   dongs: Dong[];
+  photos?: Photo[];
 }
 
-export function DongList({ buildingId, dongs }: DongListProps) {
+export function DongList({ buildingId, dongs, photos = [] }: DongListProps) {
   const router = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -97,23 +100,39 @@ export function DongList({ buildingId, dongs }: DongListProps) {
                   </div>
                 )}
 
-                {/* 사진 영역은 Phase 6에서 추가 */}
+                {/* 동별 사진 */}
+                {(() => {
+                  const dongPhotos = photos.filter((p) => p.dong_id === dong.id);
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-gray-500">사진</span>
+                        <PhotoUpload
+                          buildingId={buildingId}
+                          dongId={dong.id}
+                          currentCount={dongPhotos.length}
+                        />
+                      </div>
+                      <PhotoGrid photos={dongPhotos} buildingId={buildingId} />
+                    </div>
+                  );
+                })()}
 
                 <div className="flex gap-2 border-t border-gray-100 pt-2">
                   <button
                     type="button"
                     onClick={() => { setEditingDong(dong); setShowForm(true); }}
-                    className="flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100"
+                    className="flex min-h-[44px] items-center gap-1 rounded px-3 py-2 text-sm text-gray-500 hover:bg-gray-100"
                   >
-                    <Pencil className="h-3 w-3" />
+                    <Pencil className="h-4 w-4" />
                     수정
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(dong)}
-                    className="flex items-center gap-1 rounded px-2 py-1 text-xs text-red-500 hover:bg-red-50"
+                    className="flex min-h-[44px] items-center gap-1 rounded px-3 py-2 text-sm text-red-500 hover:bg-red-50"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-4 w-4" />
                     삭제
                   </button>
                 </div>

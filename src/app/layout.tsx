@@ -31,10 +31,10 @@ export default function RootLayout({
       <body className="h-full bg-gray-50 text-gray-900 antialiased">
         {children}
         <Toaster
-          position="bottom-center"
+          position="top-center"
           toastOptions={{
             duration: 2000,
-            style: { fontSize: '14px' },
+            style: { fontSize: '14px', marginTop: '8px' },
           }}
         />
       </body>

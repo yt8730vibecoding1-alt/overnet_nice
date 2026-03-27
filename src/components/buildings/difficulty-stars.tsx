@@ -14,18 +14,8 @@ export function DifficultyStars({ value, onChange, size = 'sm' }: DifficultyStar
 
   return (
     <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          disabled={!interactive}
-          onClick={() => {
-            if (onChange) {
-              onChange(value === star ? null : star);
-            }
-          }}
-          className={interactive ? 'min-h-[44px] min-w-[44px] flex items-center justify-center' : 'p-0'}
-        >
+      {[1, 2, 3, 4, 5].map((star) => {
+        const starIcon = (
           <Star
             className={`${starSize} ${
               value && star <= value
@@ -33,8 +23,27 @@ export function DifficultyStars({ value, onChange, size = 'sm' }: DifficultyStar
                 : 'fill-none text-gray-300'
             }`}
           />
-        </button>
-      ))}
+        );
+
+        if (interactive) {
+          return (
+            <button
+              key={star}
+              type="button"
+              onClick={() => onChange(value === star ? null : star)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center"
+            >
+              {starIcon}
+            </button>
+          );
+        }
+
+        return (
+          <span key={star} className="inline-flex">
+            {starIcon}
+          </span>
+        );
+      })}
     </div>
   );
 }

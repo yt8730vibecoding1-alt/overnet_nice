@@ -43,7 +43,8 @@ export function DongForm({ buildingId, dong, onClose, onSaved }: DongFormProps) 
         toast.success('동이 추가되었습니다');
       }
       onSaved();
-    } catch {
+    } catch (error) {
+      console.error('Dong save failed:', error);
       toast.error('저장에 실패했습니다');
     } finally {
       setLoading(false);

@@ -14,6 +14,11 @@ export function PhotoViewer({ photos, initialIndex, onClose }: PhotoViewerProps)
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const photo = photos[currentIndex];
 
+  if (!photo) {
+    onClose();
+    return null;
+  }
+
   const goNext = () => setCurrentIndex((i) => Math.min(i + 1, photos.length - 1));
   const goPrev = () => setCurrentIndex((i) => Math.max(i - 1, 0));
 

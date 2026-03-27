@@ -37,7 +37,15 @@ export function PhotoUpload({ buildingId, dongId, currentCount }: PhotoUploadPro
     setUploading(true);
     try {
       // 이미지 압축
-      const compressed = await compressImage(file);
+      let compressed: Blob;
+      try {
+        compressed = await compressImage(file);
+      } catch (err) {
+        console.error('Image compression failed:', err);
+        toast.error('이미지를 처리할 수 없습니다');
+        setUploading(false);
+        return;
+      }
 
       // Supabase Storage 업로드
       const supabase = createClient();
@@ -57,17 +65,24 @@ export function PhotoUpload({ buildingId, dongId, currentCount }: PhotoUploadPro
         .from('building-photos')
         .getPublicUrl(storagePath);
 
-      // DB에 메타데이터 저장
-      await createPhoto({
-        building_id: buildingId,
-        dong_id: dongId,
-        image_url: urlData.publicUrl,
-        storage_path: storagePath,
-      });
+      // DB에 메타데이터 저장 (실패 시 Storage 정리)
+      try {
+        await createPhoto({
+          building_id: buildingId,
+          dong_id: dongId,
+          image_url: urlData.publicUrl,
+          storage_path: storagePath,
+        });
+      } catch (err) {
+        // DB 저장 실패 → Storage에서 업로드된 파일 정리
+        await supabase.storage.from('building-photos').remove([storagePath]);
+        throw err;
+      }
 
       toast.success('사진이 업로드되었습니다');
       router.refresh();
-    } catch {
+    } catch (error) {
+      console.error('Photo upload failed:', error);
       toast.error('업로드에 실패했습니다');
     } finally {
       setUploading(false);

@@ -97,25 +97,28 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
           )}
 
           {/* 동 목록 */}
-          {building.dongs && building.dongs.length > 0 && (
-            <DongList buildingId={building.id} dongs={building.dongs} />
-          )}
-          {/* 동이 없는 경우에도 동 추가 버튼 표시 */}
-          {(!building.dongs || building.dongs.length === 0) && (
-            <DongList buildingId={building.id} dongs={[]} />
-          )}
+          <DongList
+            buildingId={building.id}
+            dongs={building.dongs ?? []}
+            photos={building.photos ?? []}
+          />
 
-          {/* 사진 */}
-          <section>
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-500">사진</h3>
-              <PhotoUpload
-                buildingId={building.id}
-                currentCount={building.photos?.length ?? 0}
-              />
-            </div>
-            <PhotoGrid photos={building.photos ?? []} buildingId={building.id} />
-          </section>
+          {/* 건물 사진 (동에 할당되지 않은 사진만) */}
+          {(() => {
+            const buildingPhotos = (building.photos ?? []).filter((p) => !p.dong_id);
+            return (
+              <section>
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-gray-500">사진</h3>
+                  <PhotoUpload
+                    buildingId={building.id}
+                    currentCount={building.photos?.length ?? 0}
+                  />
+                </div>
+                <PhotoGrid photos={buildingPhotos} buildingId={building.id} />
+              </section>
+            );
+          })()}
 
           {/* 메모 */}
           {building.notes && (
