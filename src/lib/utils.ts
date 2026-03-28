@@ -21,7 +21,12 @@ export function formatRelativeTime(dateString: string): string {
 export async function compressImage(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    const cleanup = () => URL.revokeObjectURL(objectUrl);
+
     img.onload = () => {
+      cleanup();
       const canvas = document.createElement('canvas');
       let { width, height } = img;
 
@@ -52,7 +57,10 @@ export async function compressImage(file: File): Promise<Blob> {
         JPEG_QUALITY
       );
     };
-    img.onerror = () => reject(new Error('Image load failed'));
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => {
+      cleanup();
+      reject(new Error('Image load failed'));
+    };
+    img.src = objectUrl;
   });
 }

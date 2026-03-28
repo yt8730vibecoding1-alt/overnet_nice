@@ -13,7 +13,8 @@ export async function getBuildings(query?: string): Promise<Building[]> {
     .order('updated_at', { ascending: false });
 
   if (query && query.trim()) {
-    dbQuery = dbQuery.ilike('name', `%${query.trim()}%`);
+    const trimmed = query.trim().slice(0, 100);
+    dbQuery = dbQuery.ilike('name', `%${trimmed}%`);
   }
 
   const { data, error } = await dbQuery.limit(50);

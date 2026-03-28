@@ -110,7 +110,7 @@ export function DongList({ buildingId, dongs, photos = [] }: DongListProps) {
                         <PhotoUpload
                           buildingId={buildingId}
                           dongId={dong.id}
-                          currentCount={dongPhotos.length}
+                          currentCount={photos.length}
                         />
                       </div>
                       <PhotoGrid photos={dongPhotos} buildingId={buildingId} />
