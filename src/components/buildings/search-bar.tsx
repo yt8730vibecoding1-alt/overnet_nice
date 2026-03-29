@@ -10,7 +10,7 @@ interface SearchBarProps {
 export function SearchBar({ value, onChange }: SearchBarProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
       <input
         type="text"
         value={value}
@@ -18,7 +18,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         placeholder="건물명 검색..."
         maxLength={100}
         autoComplete="off"
-        className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-10 text-base focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+        className="w-full rounded-xl border-0 bg-white py-3 pl-9 pr-10 text-sm shadow-sm placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
       />
       {value && (
         <button
@@ -26,7 +26,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
           onClick={() => onChange('')}
           className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center"
         >
-          <X className="h-5 w-5 text-gray-400" />
+          <X className="h-4 w-4 text-gray-400" />
         </button>
       )}
     </div>

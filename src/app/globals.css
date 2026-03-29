@@ -4,11 +4,18 @@
   --color-primary: #1e40af;
   --color-primary-light: #3b82f6;
   --color-star: #f59e0b;
+
+  --color-region-yonggang: #0d9488;
+  --color-region-dongcheon: #7c3aed;
+  --color-region-hwangseong: #dc2626;
+  --color-region-gyeongju: #0369a1;
+  --color-region-expo: #c2410c;
+  --color-region-etc: #6b7280;
 }
 
 body {
   -webkit-tap-highlight-color: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
 }
 
 /* iOS safe area */

@@ -1,35 +1,67 @@
 import Link from 'next/link';
-import { Building } from 'lucide-react';
-import { DifficultyStars } from './difficulty-stars';
+import { MapPin, Star } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
 import type { Building as BuildingType } from '@/lib/supabase/types';
 
-interface BuildingCardProps {
-  building: BuildingType;
+interface RegionConfig {
+  prefixes: string[];
+  color: string;
+  label: string;
 }
 
-export function BuildingCard({ building }: BuildingCardProps) {
+interface BuildingCardProps {
+  building: BuildingType;
+  regionConfig?: RegionConfig;
+}
+
+export function BuildingCard({ building, regionConfig }: BuildingCardProps) {
+  const equipPreview = building.equipment_location
+    .split('\n')[0]
+    .slice(0, 40);
+
   return (
     <Link
       href={`/buildings/${building.id}`}
-      className="block rounded-lg border border-gray-200 bg-white p-4 transition-colors active:bg-gray-50"
+      className="group relative flex overflow-hidden rounded-xl bg-white shadow-sm transition-all active:scale-[0.98] active:shadow-none"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <Building className="h-5 w-5 shrink-0 text-primary" />
-          <h3 className="truncate text-base font-semibold">{building.name}</h3>
+      {/* 지역 컬러 스트라이프 */}
+      {regionConfig && (
+        <div className={`w-1 shrink-0 ${regionConfig.color}`} />
+      )}
+
+      <div className="flex min-w-0 flex-1 flex-col gap-1 px-3.5 py-3">
+        {/* 건물명 + 난이도 */}
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="truncate text-[15px] font-bold text-gray-900">
+            {building.name}
+          </h3>
+          {building.difficulty && (
+            <div className="flex shrink-0 items-center gap-0.5">
+              <Star className="h-3 w-3 fill-star text-star" />
+              <span className="text-xs font-bold text-star">{building.difficulty}</span>
+            </div>
+          )}
         </div>
-        {building.difficulty && (
-          <DifficultyStars value={building.difficulty} size="sm" />
-        )}
-      </div>
-      <div className="mt-1 flex items-center justify-between">
-        {building.address && (
-          <p className="truncate text-sm text-gray-500">{building.address}</p>
-        )}
-        <span className="shrink-0 text-xs text-gray-400">
-          {formatRelativeTime(building.updated_at)}
-        </span>
+
+        {/* 장비 위치 프리뷰 */}
+        <p className="truncate text-[13px] text-gray-500">
+          {equipPreview}
+        </p>
+
+        {/* 하단: 주소 + 수정일 */}
+        <div className="flex items-center justify-between gap-2">
+          {building.address ? (
+            <div className="flex min-w-0 items-center gap-1 text-[11px] text-gray-400">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">{building.address}</span>
+            </div>
+          ) : (
+            <span />
+          )}
+          <span className="shrink-0 text-[11px] tabular-nums text-gray-400">
+            {formatRelativeTime(building.updated_at)}
+          </span>
+        </div>
       </div>
     </Link>
   );

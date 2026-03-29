@@ -7,10 +7,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev          # Start dev server (Next.js 16 + Turbopack)
 npm run build        # Production build (also runs TypeScript checks)
-npm run lint         # ESLint
+npm run start        # Start production server (requires build first)
+npm run lint         # ESLint (flat config, core-web-vitals + typescript)
 ```
 
-No test framework is configured yet.
+No test framework is configured yet. Use `npm run build` as the primary validation step.
 
 ## Environment
 
@@ -18,17 +19,25 @@ Requires `.env.local` with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_
 
 ## Architecture
 
-Mobile-first building information management web app for internet field technicians (경주 지역). Korean-language UI throughout.
+Mobile-first building information management web app for internet field technicians (경주 지역). Korean-language UI throughout. Import alias: `@/*` maps to `./src/*`.
 
 **Stack**: Next.js 16 (App Router) + Supabase (PostgreSQL, Auth, Storage) + Tailwind CSS 4 + TypeScript (strict mode).
 
+### Routes
+
+- `/` — Building list (server-fetched, client search via server actions)
+- `/buildings/new` — Create building form
+- `/buildings/[id]` — Building detail with nested dongs and photos
+- `/buildings/[id]/edit` — Edit building form
+- `/login` — Email+password auth
+
 ### Data Model
 
-Three tables with cascade deletes: `buildings` → `dongs` (optional sub-units like apartment wings) → `photos`. Schema lives in `supabase/migrations/001_create_initial_schema.sql` (run manually in Supabase dashboard). Types are manually defined in `src/lib/supabase/types.ts` (not auto-generated).
+Three tables with cascade deletes: `buildings` → `dongs` (optional sub-units like apartment wings) → `photos`. Schema lives in `supabase/migrations/001_create_initial_schema.sql` (run manually in Supabase dashboard). Types are manually defined in `src/lib/supabase/types.ts` (not auto-generated). The `updated_at` column on buildings and dongs is auto-updated via a Postgres trigger.
 
-- **Building**: Required fields are `name` and `equipment_location` only. Everything else is nullable.
+- **Building**: Required fields are `name` and `equipment_location` only. Everything else is nullable. `difficulty` is 1–5 (smallint with check constraint).
 - **Dong**: Optional child of building. Has its own equipment_location, wiring, etc.
-- **Photo**: Linked to building and optionally to a dong. `storage_path` tracks the Supabase Storage path for cleanup.
+- **Photo**: Linked to building and optionally to a dong. `storage_path` tracks the Supabase Storage path (bucket: `building-photos`) for cleanup.
 
 ### Data Flow Pattern
 
@@ -54,6 +63,6 @@ Middleware (`src/middleware.ts`) redirects unauthenticated users to `/login`. Us
 ### Constraints
 
 - All touch targets must be minimum 44x44px for mobile usability.
-- Photo uploads: max 10 per building, max 10MB per file, client-compressed to 1920px max dimension at JPEG 0.8 quality.
+- Photo uploads: max 10 per building, max 10MB per file, client-compressed to 1920px max dimension at JPEG 0.8 quality. Constants in `src/lib/constants.ts`.
 - No RLS policies on tables yet (MVP single user). Storage has auth-based policies.
 - `next.config.ts` needs Supabase Storage domain added to `images.remotePatterns` when switching `<img>` to Next.js `<Image>`.

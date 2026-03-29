@@ -50,16 +50,16 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
       {/* 헤더 */}
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-primary px-4 py-3">
         <div className="flex items-center gap-3">
-          <button type="button" onClick={() => router.push('/')} className="p-1 text-white">
+          <button type="button" onClick={() => router.push('/')} className="p-3 text-white">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="truncate text-lg font-bold text-white">{building.name}</h1>
         </div>
         <div className="flex items-center gap-1">
-          <Link href={`/buildings/${building.id}/edit`} className="p-2 text-white">
+          <Link href={`/buildings/${building.id}/edit`} className="p-3 text-white">
             <Pencil className="h-5 w-5" />
           </Link>
-          <button type="button" onClick={handleDelete} disabled={deleting} className="p-2 text-white disabled:opacity-50">
+          <button type="button" onClick={handleDelete} disabled={deleting} className="p-3 text-white disabled:opacity-50">
             <Trash2 className="h-5 w-5" />
           </button>
         </div>

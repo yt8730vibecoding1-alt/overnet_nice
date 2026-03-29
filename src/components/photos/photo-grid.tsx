@@ -26,7 +26,7 @@ export function PhotoGrid({ photos, buildingId }: PhotoGridProps) {
 
     setDeletingId(photo.id);
     try {
-      await deletePhoto(photo.id, buildingId, photo.storage_path);
+      await deletePhoto(photo.id, buildingId);
       toast.success('사진이 삭제되었습니다');
       router.refresh();
     } catch {
@@ -60,9 +60,9 @@ export function PhotoGrid({ photos, buildingId }: PhotoGridProps) {
               type="button"
               onClick={(e) => handleDelete(e, photo)}
               disabled={deletingId === photo.id}
-              className="absolute right-1 top-1 rounded-full bg-black/50 p-1.5 text-white transition-opacity hover:bg-black/70 disabled:opacity-50"
+              className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white transition-opacity hover:bg-black/70 disabled:opacity-50"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-4 w-4" />
             </button>
           </div>
         ))}

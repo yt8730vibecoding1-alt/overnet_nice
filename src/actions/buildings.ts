@@ -1,11 +1,11 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAuthenticatedClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { BuildingInsert, BuildingUpdate, BuildingWithDetails, Building } from '@/lib/supabase/types';
 
 export async function getBuildings(query?: string): Promise<Building[]> {
-  const supabase = await createClient();
+  const supabase = await createAuthenticatedClient();
 
   let dbQuery = supabase
     .from('buildings')
@@ -24,7 +24,7 @@ export async function getBuildings(query?: string): Promise<Building[]> {
 }
 
 export async function getBuilding(id: string): Promise<BuildingWithDetails> {
-  const supabase = await createClient();
+  const supabase = await createAuthenticatedClient();
 
   const { data, error } = await supabase
     .from('buildings')
@@ -37,7 +37,7 @@ export async function getBuilding(id: string): Promise<BuildingWithDetails> {
 }
 
 export async function createBuilding(input: BuildingInsert): Promise<string> {
-  const supabase = await createClient();
+  const supabase = await createAuthenticatedClient();
 
   const { data, error } = await supabase
     .from('buildings')
@@ -51,7 +51,7 @@ export async function createBuilding(input: BuildingInsert): Promise<string> {
 }
 
 export async function updateBuilding(id: string, input: BuildingUpdate): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await createAuthenticatedClient();
 
   const { error } = await supabase
     .from('buildings')
@@ -64,24 +64,27 @@ export async function updateBuilding(id: string, input: BuildingUpdate): Promise
 }
 
 export async function deleteBuilding(id: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await createAuthenticatedClient();
 
-  // 먼저 Storage에서 사진 파일 삭제
+  // 삭제할 사진 경로를 먼저 조회 (DB 삭제 전에 조회해야 함)
   const { data: photos } = await supabase
     .from('photos')
     .select('storage_path')
     .eq('building_id', id);
 
-  if (photos && photos.length > 0) {
-    const paths = photos.map((p) => p.storage_path);
-    await supabase.storage.from('building-photos').remove(paths);
-  }
-
+  // DB 레코드 먼저 삭제 (cascade로 dongs, photos도 삭제됨)
   const { error } = await supabase
     .from('buildings')
     .delete()
     .eq('id', id);
 
   if (error) throw new Error(error.message);
+
+  // DB 삭제 성공 후 Storage 파일 정리
+  if (photos && photos.length > 0) {
+    const paths = photos.map((p) => p.storage_path);
+    await supabase.storage.from('building-photos').remove(paths);
+  }
+
   revalidatePath('/');
 }
