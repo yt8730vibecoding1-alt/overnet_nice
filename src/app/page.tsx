@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Plus, Radio } from 'lucide-react';
 import { BuildingList } from '@/components/buildings/building-list';
+import { LogoutButton } from '@/components/auth/logout-button';
 import { getBuildings } from '@/actions/buildings';
 
 export default async function HomePage() {
@@ -17,17 +18,20 @@ export default async function HomePage() {
             </div>
             <div>
               <h1 className="text-base font-bold tracking-tight text-white">건물정보</h1>
-              <p className="text-[10px] font-medium tracking-widest text-gray-400">OVERNET FIELD GUIDE</p>
+              <p className="text-xs font-medium tracking-widest text-gray-400">OVERNET</p>
             </div>
           </div>
-          <span className="rounded-full bg-gray-800 px-2.5 py-1 text-xs font-semibold tabular-nums text-gray-300">
-            {buildings.length}건
-          </span>
+          <div className="flex items-center gap-1">
+            <span className="rounded-full bg-gray-800 px-2.5 py-1 text-xs font-semibold tabular-nums text-gray-300">
+              {buildings.length}건
+            </span>
+            <LogoutButton />
+          </div>
         </div>
       </header>
 
       {/* 메인 콘텐츠 */}
-      <main className="flex flex-1 flex-col gap-3 p-3">
+      <main className="flex flex-1 flex-col gap-3 p-3 pb-24">
         <BuildingList initialBuildings={buildings} />
       </main>
 
@@ -35,6 +39,7 @@ export default async function HomePage() {
       <Link
         href="/buildings/new"
         className="safe-bottom fixed bottom-6 right-4 z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-900 text-white shadow-xl shadow-gray-900/30 transition-transform active:scale-95"
+        aria-label="건물 추가"
       >
         <Plus className="h-7 w-7" strokeWidth={2.5} />
       </Link>

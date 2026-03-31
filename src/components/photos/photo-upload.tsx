@@ -19,73 +19,87 @@ export function PhotoUpload({ buildingId, dongId, currentCount }: PhotoUploadPro
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
 
   const isMaxReached = currentCount >= MAX_PHOTOS_PER_BUILDING;
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const uploadSingleFile = async (file: File): Promise<boolean> => {
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`${file.name}: 10MB 초과`);
+      return false;
+    }
 
-    // 입력 초기화 (같은 파일 재선택 가능)
+    let compressed: Blob;
+    try {
+      compressed = await compressImage(file);
+    } catch (err) {
+      console.error('Image compression failed:', err);
+      toast.error('이미지를 처리할 수 없습니다');
+      return false;
+    }
+
+    const supabase = createClient();
+    const fileName = `${crypto.randomUUID()}.jpg`;
+    const storagePath = `${buildingId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('building-photos')
+      .upload(storagePath, compressed, { contentType: 'image/jpeg' });
+
+    if (uploadError) throw uploadError;
+
+    const { data: urlData } = supabase.storage
+      .from('building-photos')
+      .getPublicUrl(storagePath);
+
+    try {
+      await createPhoto({
+        building_id: buildingId,
+        dong_id: dongId,
+        image_url: urlData.publicUrl,
+        storage_path: storagePath,
+      });
+    } catch (err) {
+      await supabase.storage.from('building-photos').remove([storagePath]);
+      throw err;
+    }
+
+    return true;
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     e.target.value = '';
 
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error('파일 크기는 10MB 이하여야 합니다');
+    const remaining = MAX_PHOTOS_PER_BUILDING - currentCount;
+    const filesToUpload = Array.from(files).slice(0, remaining);
+
+    if (filesToUpload.length === 0) {
+      toast.error(`최대 ${MAX_PHOTOS_PER_BUILDING}장까지 가능합니다`);
       return;
     }
 
     setUploading(true);
+    let successCount = 0;
+
     try {
-      // 이미지 압축
-      let compressed: Blob;
-      try {
-        compressed = await compressImage(file);
-      } catch (err) {
-        console.error('Image compression failed:', err);
-        toast.error('이미지를 처리할 수 없습니다');
-        setUploading(false);
-        return;
+      for (let i = 0; i < filesToUpload.length; i++) {
+        setUploadProgress(`${i + 1}/${filesToUpload.length}`);
+        const ok = await uploadSingleFile(filesToUpload[i]);
+        if (ok) successCount++;
       }
 
-      // Supabase Storage 업로드
-      const supabase = createClient();
-      const fileName = `${crypto.randomUUID()}.jpg`;
-      const storagePath = `${buildingId}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('building-photos')
-        .upload(storagePath, compressed, {
-          contentType: 'image/jpeg',
-        });
-
-      if (uploadError) throw uploadError;
-
-      // 공개 URL 가져오기
-      const { data: urlData } = supabase.storage
-        .from('building-photos')
-        .getPublicUrl(storagePath);
-
-      // DB에 메타데이터 저장 (실패 시 Storage 정리)
-      try {
-        await createPhoto({
-          building_id: buildingId,
-          dong_id: dongId,
-          image_url: urlData.publicUrl,
-          storage_path: storagePath,
-        });
-      } catch (err) {
-        // DB 저장 실패 → Storage에서 업로드된 파일 정리
-        await supabase.storage.from('building-photos').remove([storagePath]);
-        throw err;
+      if (successCount > 0) {
+        toast.success(`사진 ${successCount}장 업로드 완료`);
+        router.refresh();
       }
-
-      toast.success('사진이 업로드되었습니다');
-      router.refresh();
     } catch (error) {
       console.error('Photo upload failed:', error);
       toast.error('업로드에 실패했습니다');
     } finally {
       setUploading(false);
+      setUploadProgress('');
     }
   };
 
@@ -96,6 +110,7 @@ export function PhotoUpload({ buildingId, dongId, currentCount }: PhotoUploadPro
         type="file"
         accept="image/*"
         capture="environment"
+        multiple
         onChange={handleFileChange}
         className="hidden"
       />
@@ -108,7 +123,7 @@ export function PhotoUpload({ buildingId, dongId, currentCount }: PhotoUploadPro
         {uploading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            업로드 중...
+            업로드 중 {uploadProgress}
           </>
         ) : isMaxReached ? (
           `최대 ${MAX_PHOTOS_PER_BUILDING}장`

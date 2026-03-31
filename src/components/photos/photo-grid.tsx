@@ -60,6 +60,7 @@ export function PhotoGrid({ photos, buildingId }: PhotoGridProps) {
               type="button"
               onClick={(e) => handleDelete(e, photo)}
               disabled={deletingId === photo.id}
+              aria-label="사진 삭제"
               className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white transition-opacity hover:bg-black/70 disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />

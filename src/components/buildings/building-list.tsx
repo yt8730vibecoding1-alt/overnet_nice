@@ -90,12 +90,12 @@ export function BuildingList({ initialBuildings }: BuildingListProps) {
         <div className="flex flex-col gap-5">
           {grouped.map(([config, items]) => (
             <section key={config.label}>
-              <div className="mb-2 flex items-center gap-2 px-1">
-                <div className={`h-3 w-3 rounded-sm ${config.color}`} />
-                <h2 className="text-xs font-bold tracking-wide text-gray-500">
+              <div className="sticky top-[52px] z-[5] mb-2 flex items-center gap-2 bg-gray-100 px-1 py-1">
+                <div className={`h-4 w-1 rounded-full ${config.color}`} />
+                <h2 className="text-sm font-bold text-gray-500">
                   {config.label}
                 </h2>
-                <span className="text-[10px] font-semibold text-gray-400">{items.length}</span>
+                <span className="text-xs font-semibold text-gray-400">{items.length}</span>
               </div>
               <div className="flex flex-col gap-1.5">
                 {items.map((building) => (

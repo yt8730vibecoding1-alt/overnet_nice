@@ -14,7 +14,7 @@ export async function getBuildings(query?: string): Promise<Building[]> {
 
   if (query && query.trim()) {
     const trimmed = query.trim().slice(0, 100);
-    dbQuery = dbQuery.ilike('name', `%${trimmed}%`);
+    dbQuery = dbQuery.or(`name.ilike.%${trimmed}%,equipment_location.ilike.%${trimmed}%,address.ilike.%${trimmed}%`);
   }
 
   const { data, error } = await dbQuery.limit(50);

@@ -19,7 +19,7 @@ interface BuildingDetailProps {
 
 export function BuildingDetail({ building }: BuildingDetailProps) {
   const router = useRouter();
-  const [showMore, setShowMore] = useState(false);
+  const [showEquipDetail, setShowEquipDetail] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -36,10 +36,15 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
     }
   };
 
-  const infoItems = [
-    { label: '주소', value: building.address, icon: MapPin },
+  // 출입 정보 (항상 표시)
+  const accessItems = [
     { label: '출입 방법', value: building.access_method, icon: KeyRound },
-    { label: '관리실 연락처', value: building.admin_contact, icon: Phone },
+    { label: '관리실 연락처', value: building.admin_contact, icon: Phone, isTel: true },
+    { label: '주소', value: building.address, icon: MapPin },
+  ].filter((item) => item.value);
+
+  // 설비 상세 (접힘)
+  const equipDetailItems = [
     { label: '댁내 단자함', value: building.indoor_panel_location, icon: Package },
     { label: '층별 단자함', value: building.floor_panels, icon: Settings },
     { label: '작업 범위', value: building.work_scope, icon: Wrench },
@@ -49,17 +54,22 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
     <div className="flex h-full flex-col">
       {/* 헤더 */}
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-primary px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={() => router.push('/')} className="p-3 text-white">
+        <div className="flex min-w-0 items-center gap-2">
+          <button type="button" onClick={() => router.push('/')} className="shrink-0 p-3 text-white" aria-label="뒤로 가기">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="truncate text-lg font-bold text-white">{building.name}</h1>
+          {building.difficulty && (
+            <div className="shrink-0">
+              <DifficultyStars value={building.difficulty} size="sm" />
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-1">
-          <Link href={`/buildings/${building.id}/edit`} className="p-3 text-white">
+        <div className="flex shrink-0 items-center gap-1">
+          <Link href={`/buildings/${building.id}/edit`} className="p-3 text-white" aria-label="수정">
             <Pencil className="h-5 w-5" />
           </Link>
-          <button type="button" onClick={handleDelete} disabled={deleting} className="p-3 text-white disabled:opacity-50">
+          <button type="button" onClick={handleDelete} disabled={deleting} className="p-3 text-white disabled:opacity-50" aria-label="삭제">
             <Trash2 className="h-5 w-5" />
           </button>
         </div>
@@ -68,15 +78,9 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
       {/* 콘텐츠 */}
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-4 p-4">
-          {/* 건물명 + 난이도 */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">{building.name}</h2>
-            {building.difficulty && <DifficultyStars value={building.difficulty} />}
-          </div>
-
           <p className="text-xs text-gray-400">최근 수정: {formatRelativeTime(building.updated_at)}</p>
 
-          {/* 장비 위치 */}
+          {/* 장비 위치 (핵심 정보) */}
           <section className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-500">
               <Network className="h-4 w-4" />
@@ -96,6 +100,38 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
             </section>
           )}
 
+          {/* 출입 정보 (항상 펼침) */}
+          {accessItems.length > 0 && (
+            <div className="space-y-3">
+              {accessItems.map((item) => (
+                <section key={item.label} className="rounded-lg border border-gray-200 bg-white p-4">
+                  <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-500">
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </div>
+                  {'isTel' in item && item.isTel ? (
+                    <a href={`tel:${item.value!.replace(/[^0-9+\-]/g, '')}`} className="text-base font-medium text-primary underline">
+                      {item.value}
+                    </a>
+                  ) : (
+                    <p className="whitespace-pre-wrap text-base">{item.value}</p>
+                  )}
+                </section>
+              ))}
+            </div>
+          )}
+
+          {/* 메모 / 주의사항 */}
+          {building.notes && (
+            <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-amber-700">
+                <Notebook className="h-4 w-4" />
+                메모 / 주의사항
+              </div>
+              <p className="whitespace-pre-wrap text-base text-amber-900">{building.notes}</p>
+            </section>
+          )}
+
           {/* 동 목록 */}
           <DongList
             buildingId={building.id}
@@ -103,7 +139,7 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
             photos={building.photos ?? []}
           />
 
-          {/* 건물 사진 (동에 할당되지 않은 사진만) */}
+          {/* 건물 사진 */}
           {(() => {
             const buildingPhotos = (building.photos ?? []).filter((p) => !p.dong_id);
             return (
@@ -120,31 +156,20 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
             );
           })()}
 
-          {/* 메모 */}
-          {building.notes && (
-            <section className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-amber-700">
-                <Notebook className="h-4 w-4" />
-                메모 / 주의사항
-              </div>
-              <p className="whitespace-pre-wrap text-base text-amber-900">{building.notes}</p>
-            </section>
-          )}
-
-          {/* 기타 정보 (접힘) */}
-          {infoItems.length > 0 && (
+          {/* 설비 상세 (접힘) */}
+          {equipDetailItems.length > 0 && (
             <div>
               <button
                 type="button"
-                onClick={() => setShowMore(!showMore)}
+                onClick={() => setShowEquipDetail(!showEquipDetail)}
                 className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-600"
               >
-                기타 정보 ({infoItems.length}개)
-                {showMore ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                설비 상세 ({equipDetailItems.length}개)
+                {showEquipDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </button>
-              {showMore && (
+              {showEquipDetail && (
                 <div className="mt-2 space-y-3">
-                  {infoItems.map((item) => (
+                  {equipDetailItems.map((item) => (
                     <section key={item.label} className="rounded-lg border border-gray-200 bg-white p-4">
                       <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-500">
                         <item.icon className="h-4 w-4" />

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "react-hot-toast";
+import { SessionGuard } from "@/components/auth/session-guard";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="ko" className="h-full">
       <body className="h-full bg-gray-50 text-gray-900 antialiased">
         {children}
+        <SessionGuard />
         <Toaster
           position="top-center"
           toastOptions={{

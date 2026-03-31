@@ -15,7 +15,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="건물명 검색..."
+        placeholder="건물명, 장비위치, 주소 검색..."
         maxLength={100}
         autoComplete="off"
         className="w-full rounded-xl border-0 bg-white py-3 pl-9 pr-10 text-sm shadow-sm placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
