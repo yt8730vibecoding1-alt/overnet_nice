@@ -4,13 +4,13 @@ import { SessionGuard } from "@/components/auth/session-guard";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "건물정보 관리",
-  description: "경주 지역 인터넷 현장기사 건물정보 관리 시스템",
+  title: "오버넷 건물정보",
+  description: "오버넷 경주 지역 인터넷 현장기사 건물정보 관리 시스템",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "건물정보",
+    title: "오버넷",
   },
 };
 
@@ -19,7 +19,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#1e40af",
+  themeColor: "#1B4F9B",
 };
 
 export default function RootLayout({

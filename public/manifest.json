@@ -1,11 +1,11 @@
 {
-  "name": "건물정보 관리",
-  "short_name": "건물정보",
-  "description": "경주 지역 인터넷 현장기사 건물정보 관리 시스템",
+  "name": "오버넷 건물정보",
+  "short_name": "오버넷",
+  "description": "오버넷 경주 지역 인터넷 현장기사 건물정보 관리 시스템",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
-  "theme_color": "#1e40af",
+  "theme_color": "#1B4F9B",
   "orientation": "portrait",
   "icons": [
     {
