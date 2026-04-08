@@ -1,8 +1,8 @@
 export interface Building {
   id: string;
-  name: string;
+  name: string | null;
   equipment_location: string;
-  address: string | null;
+  address: string;
   wiring_structure: string | null;
   floor_panels: string | null;
   access_method: string | null;
@@ -42,8 +42,8 @@ export interface BuildingWithDetails extends Building {
   photos: Photo[];
 }
 
-export type BuildingInsert = Pick<Building, 'name' | 'equipment_location'> &
-  Partial<Omit<Building, 'id' | 'name' | 'equipment_location' | 'created_at' | 'updated_at'>>;
+export type BuildingInsert = Pick<Building, 'address' | 'equipment_location'> &
+  Partial<Omit<Building, 'id' | 'address' | 'equipment_location' | 'created_at' | 'updated_at'>>;
 
 export type BuildingUpdate = Partial<Omit<Building, 'id' | 'created_at' | 'updated_at'>>;
 

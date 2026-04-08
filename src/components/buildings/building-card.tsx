@@ -15,6 +15,9 @@ interface BuildingCardProps {
 }
 
 export function BuildingCard({ building, regionConfig }: BuildingCardProps) {
+  const displayTitle = building.address;
+  const displaySub = building.name;
+
   return (
     <Link
       href={`/buildings/${building.id}`}
@@ -26,11 +29,14 @@ export function BuildingCard({ building, regionConfig }: BuildingCardProps) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-1 px-3.5 py-3">
-        {/* 건물명 + 난이도 */}
+        {/* 주소 (메인) + 난이도 */}
         <div className="flex items-center justify-between gap-2">
-          <h3 className="truncate text-base font-bold text-gray-900">
-            {building.name}
-          </h3>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+            <h3 className="truncate text-[15px] font-bold text-gray-900">
+              {displayTitle}
+            </h3>
+          </div>
           {building.difficulty && (
             <div className="flex shrink-0 items-center gap-0.5">
               <Star className="h-3 w-3 fill-star text-star" />
@@ -39,21 +45,16 @@ export function BuildingCard({ building, regionConfig }: BuildingCardProps) {
           )}
         </div>
 
-        {/* 장비 위치 프리뷰 (2줄) */}
-        <p className="line-clamp-2 text-sm leading-snug text-gray-500">
-          {building.equipment_location}
-        </p>
+        {/* 건물명 (있으면 표시) */}
+        {displaySub && (
+          <p className="truncate text-sm font-medium text-gray-600">{displaySub}</p>
+        )}
 
-        {/* 하단: 주소 + 수정일 */}
+        {/* 장비 위치 프리뷰 + 수정일 */}
         <div className="flex items-center justify-between gap-2">
-          {building.address ? (
-            <div className="flex min-w-0 items-center gap-1 text-xs text-gray-400">
-              <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{building.address}</span>
-            </div>
-          ) : (
-            <span />
-          )}
+          <p className="line-clamp-1 text-sm leading-snug text-gray-400">
+            {building.equipment_location}
+          </p>
           <span className="shrink-0 text-xs tabular-nums text-gray-400">
             {formatRelativeTime(building.updated_at)}
           </span>

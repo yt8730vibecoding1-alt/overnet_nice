@@ -29,9 +29,10 @@ const REGIONS: RegionConfig[] = [
 
 const ETC_REGION: RegionConfig = { prefixes: [], color: 'bg-region-etc', label: '기타' };
 
-function getRegionConfig(name: string): RegionConfig {
+function getRegionConfig(building: Building): RegionConfig {
+  const text = `${building.address ?? ''} ${building.name ?? ''}`;
   for (const region of REGIONS) {
-    if (region.prefixes.some((p) => name.startsWith(p))) return region;
+    if (region.prefixes.some((p) => text.includes(p))) return region;
   }
   return ETC_REGION;
 }
@@ -40,7 +41,7 @@ function groupBuildings(buildings: Building[]): [RegionConfig, Building[]][] {
   const groups = new Map<string, { config: RegionConfig; items: Building[] }>();
 
   for (const building of buildings) {
-    const config = getRegionConfig(building.name);
+    const config = getRegionConfig(building);
     if (!groups.has(config.label)) groups.set(config.label, { config, items: [] });
     groups.get(config.label)!.items.push(building);
   }
@@ -83,7 +84,7 @@ export function BuildingList({ initialBuildings }: BuildingListProps) {
       ) : search ? (
         <div className="flex flex-col gap-2">
           {buildings.map((building) => (
-            <BuildingCard key={building.id} building={building} regionConfig={getRegionConfig(building.name)} />
+            <BuildingCard key={building.id} building={building} regionConfig={getRegionConfig(building)} />
           ))}
         </div>
       ) : (

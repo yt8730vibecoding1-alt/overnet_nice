@@ -36,10 +36,10 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  const [address, setAddress] = useState(building?.address ?? '');
   const [name, setName] = useState(building?.name ?? '');
   const [equipmentLocation, setEquipmentLocation] = useState(building?.equipment_location ?? '');
   const [difficulty, setDifficulty] = useState<number | null>(building?.difficulty ?? null);
-  const [address, setAddress] = useState(building?.address ?? '');
   const [wiringStructure, setWiringStructure] = useState(building?.wiring_structure ?? '');
   const [floorPanels, setFloorPanels] = useState(building?.floor_panels ?? '');
   const [accessMethod, setAccessMethod] = useState(building?.access_method ?? '');
@@ -50,15 +50,15 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !equipmentLocation.trim()) return;
+    if (!address.trim() || !equipmentLocation.trim()) return;
 
     setLoading(true);
     try {
       const data = {
-        name: name.trim(),
+        address: address.trim(),
+        name: name.trim() || null,
         equipment_location: equipmentLocation.trim(),
         difficulty,
-        address: address.trim() || null,
         wiring_structure: wiringStructure.trim() || null,
         floor_panels: floorPanels.trim() || null,
         access_method: accessMethod.trim() || null,
@@ -89,7 +89,7 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
   const labelClass = 'mb-1 block text-sm font-medium text-gray-700';
 
   const hasEquipData = !!(wiringStructure || floorPanels || indoorPanelLocation || workScope);
-  const hasAccessData = !!(address || accessMethod || adminContact);
+  const hasAccessData = !!(accessMethod || adminContact);
   const hasNotes = !!notes;
 
   return (
@@ -111,9 +111,16 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
           <div className="space-y-4 rounded-xl border border-gray-200 bg-white px-4 py-4">
             <div>
               <label className={labelClass}>
-                건물명 <span className="text-red-500">*</span>
+                주소 <span className="text-red-500">*</span>
               </label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} placeholder="예: 경주 힐튼 호텔" />
+              <AddressSearch value={address} onChange={setAddress} />
+            </div>
+
+            <div>
+              <label className={labelClass}>
+                건물명 <span className="text-xs font-normal text-gray-400">(선택)</span>
+              </label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="예: 경주 힐튼 호텔, 동천 금강아파트" />
             </div>
 
             <div>
@@ -150,11 +157,7 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
           </FormSection>
 
           {/* 건물 접근 정보 */}
-          <FormSection title="건물 접근 정보" defaultOpen={hasAccessData}>
-            <div>
-              <label className={labelClass}>주소</label>
-              <AddressSearch value={address} onChange={setAddress} />
-            </div>
+          <FormSection title="출입 / 관리실 정보" defaultOpen={hasAccessData}>
             <div>
               <label className={labelClass}>출입 방법</label>
               <textarea value={accessMethod} onChange={(e) => setAccessMethod(e.target.value)} className={inputClass} rows={2} placeholder="건물 출입 방법" />
@@ -180,7 +183,7 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
         <div className="safe-bottom fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4">
           <button
             type="submit"
-            disabled={loading || !name.trim() || !equipmentLocation.trim()}
+            disabled={loading || !address.trim() || !equipmentLocation.trim()}
             className="w-full rounded-xl bg-gray-900 py-3.5 text-base font-semibold text-white transition-colors active:bg-gray-800 disabled:opacity-50"
           >
             {loading ? '저장 중...' : mode === 'create' ? '저장' : '수정'}
