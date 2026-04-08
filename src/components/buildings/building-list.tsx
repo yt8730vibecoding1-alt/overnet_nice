@@ -136,45 +136,66 @@ export function BuildingList({ initialBuildings }: BuildingListProps) {
         </div>
       ) : (
         <>
-          {/* 읍면동 가로 칩 (검색 중이 아닐 때만) */}
-          {!search && grouped.length > 1 && (
-            <div className="sticky top-[52px] z-[5] -mx-4 bg-gray-50 px-4 pb-2 pt-1">
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {/* 전체 칩 */}
+          {/* 읍면동 가로 칩 2줄 (검색 중이 아닐 때만) */}
+          {!search && grouped.length > 1 && (() => {
+            const allChips = [
+              { district: null, label: `전체 ${buildings.length}`, items: buildings },
+              ...grouped.map(([district, items]) => ({ district, label: `${district} ${items.length}`, items })),
+            ];
+            const mid = Math.ceil(allChips.length / 2);
+            const row1 = allChips.slice(0, mid);
+            const row2 = allChips.slice(mid);
+
+            const renderChip = (chip: typeof allChips[0], index: number) => {
+              const isActive = selectedDistrict === chip.district;
+              if (chip.district === null) {
+                return (
+                  <button
+                    key="all"
+                    type="button"
+                    onClick={() => setSelectedDistrict(null)}
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
+                      selectedDistrict === null
+                        ? 'border-gray-700 bg-gray-700 text-white'
+                        : 'border-gray-300 bg-white text-gray-500'
+                    }`}
+                  >
+                    {chip.label}
+                  </button>
+                );
+              }
+              const color = CHIP_COLORS[index % CHIP_COLORS.length];
+              return (
                 <button
+                  key={chip.district}
                   type="button"
-                  onClick={() => setSelectedDistrict(null)}
+                  onClick={() => setSelectedDistrict(isActive ? null : chip.district)}
                   className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
-                    selectedDistrict === null
-                      ? 'border-gray-700 bg-gray-700 text-white'
-                      : 'border-gray-300 bg-white text-gray-500'
+                    isActive
+                      ? `${color.activeBg} ${color.activeText} border-transparent`
+                      : `${color.bg} ${color.border} ${color.text}`
                   }`}
                 >
-                  전체 {buildings.length}
+                  {chip.label}
                 </button>
+              );
+            };
 
-                {grouped.map(([district, items], index) => {
-                  const isActive = selectedDistrict === district;
-                  const color = CHIP_COLORS[index % CHIP_COLORS.length];
-
-                  return (
-                    <button
-                      key={district}
-                      type="button"
-                      onClick={() => setSelectedDistrict(isActive ? null : district)}
-                      className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
-                        isActive
-                          ? `${color.activeBg} ${color.activeText} border-transparent`
-                          : `${color.bg} ${color.border} ${color.text}`
-                      }`}
-                    >
-                      {district} {items.length}
-                    </button>
-                  );
-                })}
+            return (
+              <div className="sticky top-[52px] z-[5] -mx-4 bg-gray-50 px-4 pb-2 pt-1">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                    {row1.map((chip, i) => renderChip(chip, i))}
+                  </div>
+                  {row2.length > 0 && (
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                      {row2.map((chip, i) => renderChip(chip, mid + i))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* 건물 카드 목록 */}
           <div className="flex flex-col gap-1.5">
