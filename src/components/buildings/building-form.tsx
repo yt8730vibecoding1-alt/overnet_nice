@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { DifficultyStars } from './difficulty-stars';
+import { AddressSearch } from './address-search';
 import { createBuilding, updateBuilding } from '@/actions/buildings';
 import toast from 'react-hot-toast';
 import type { Building } from '@/lib/supabase/types';
@@ -152,7 +153,7 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
           <FormSection title="건물 접근 정보" defaultOpen={hasAccessData}>
             <div>
               <label className={labelClass}>주소</label>
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className={inputClass} placeholder="주소" />
+              <AddressSearch value={address} onChange={setAddress} />
             </div>
             <div>
               <label className={labelClass}>출입 방법</label>

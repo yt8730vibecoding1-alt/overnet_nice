@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import toast from 'react-hot-toast';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,22 +26,36 @@ export default function LoginPage() {
       return;
     }
 
+    if (password.length < 6) {
+      setError('비밀번호는 6자리 이상이어야 합니다.');
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { error: signUpError } = await supabase.auth.signUp({
       email: `${idTrimmed}@overnet.com`,
       password,
     });
 
-    if (authError) {
-      setError('사번 또는 비밀번호가 올바르지 않습니다.');
+    if (signUpError) {
+      if (signUpError.message.includes('already registered')) {
+        setError('이미 등록된 사번입니다.');
+      } else {
+        setError('가입에 실패했습니다. 다시 시도해주세요.');
+      }
       setLoading(false);
       return;
     }
 
-    router.push('/');
-    router.refresh();
+    toast.success('가입 완료! 로그인해주세요.');
+    router.push('/login');
   };
 
   const inputClass = 'w-full rounded-lg border border-gray-300 px-4 py-3 text-base focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none';
@@ -52,8 +68,8 @@ export default function LoginPage() {
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
             <span className="text-2xl font-black tracking-tight text-white">O</span>
           </div>
-          <h1 className="text-2xl font-bold text-primary-dark">오버넷</h1>
-          <p className="mt-1 text-sm text-gray-500">건물정보 관리 시스템</p>
+          <h1 className="text-2xl font-bold text-primary-dark">회원가입</h1>
+          <p className="mt-1 text-sm text-gray-500">오버넷 건물정보 관리 시스템</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,9 +103,10 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="current-password"
+                minLength={6}
+                autoComplete="new-password"
                 className={inputClass}
-                placeholder="비밀번호를 입력하세요"
+                placeholder="비밀번호 (6자리 이상)"
               />
               <button
                 type="button"
@@ -101,6 +118,23 @@ export default function LoginPage() {
             </div>
           </div>
 
+          <div>
+            <label htmlFor="passwordConfirm" className="mb-1 block text-sm font-medium text-gray-700">
+              비밀번호 확인
+            </label>
+            <input
+              id="passwordConfirm"
+              type={showPassword ? 'text' : 'password'}
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              required
+              minLength={6}
+              autoComplete="new-password"
+              className={inputClass}
+              placeholder="비밀번호를 다시 입력하세요"
+            />
+          </div>
+
           {error && (
             <p className="text-sm text-red-600">{error}</p>
           )}
@@ -110,14 +144,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-lg bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primary-light disabled:opacity-50"
           >
-            {loading ? '로그인 중...' : '로그인'}
+            {loading ? '가입 중...' : '가입하기'}
           </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          계정이 없나요?{' '}
-          <Link href="/signup" className="font-medium text-primary">
-            회원가입
+          이미 계정이 있나요?{' '}
+          <Link href="/login" className="font-medium text-primary">
+            로그인
           </Link>
         </p>
       </div>

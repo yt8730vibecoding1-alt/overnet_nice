@@ -36,7 +36,8 @@ export async function proxy(request: NextRequest) {
   // 미인증 사용자는 /login으로 리다이렉트 (로그인 페이지 자체는 제외)
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith('/login')
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/signup')
   ) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
@@ -44,7 +45,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // 인증된 사용자가 /login 접근 시 메인으로 리다이렉트
-  if (user && request.nextUrl.pathname.startsWith('/login')) {
+  if (user && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup'))) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);
