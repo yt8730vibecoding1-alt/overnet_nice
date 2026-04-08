@@ -56,13 +56,26 @@ const DISTRICTS: DistrictDef[] = [
 ];
 
 function getDistrict(building: Building): string {
-  const text = `${building.address} ${building.name ?? ''}`;
+  const addr = building.address;
 
+  // 1) 괄호 안 법정동 우선 파싱: "...로 123 (황성동)" or "(황성동, 건물명)"
+  const parenMatch = addr.match(/\(([^)]+)\)/);
+  if (parenMatch) {
+    const parenContent = parenMatch[1];
+    for (const district of DISTRICTS) {
+      if (district.keywords.some((kw) => parenContent.includes(kw))) {
+        return district.label;
+      }
+    }
+  }
+
+  // 2) 주소 전체에서 키워드 매칭 (도로명, 지번 등)
   for (const district of DISTRICTS) {
-    if (district.keywords.some((kw) => text.includes(kw))) {
+    if (district.keywords.some((kw) => addr.includes(kw))) {
       return district.label;
     }
   }
+
   return '기타';
 }
 

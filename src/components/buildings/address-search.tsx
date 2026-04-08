@@ -21,6 +21,10 @@ interface DaumPostcodeData {
   roadAddress: string;
   jibunAddress: string;
   buildingName: string;
+  /** 법정동/법정리 이름 (예: "황성동", "보문동") */
+  bname: string;
+  /** 법정동/법정리 시군구 (예: "경주시") */
+  sigungu: string;
 }
 
 interface AddressSearchProps {
@@ -54,9 +58,15 @@ export function AddressSearch({ value, onChange }: AddressSearchProps) {
 
     new window.daum.Postcode({
       oncomplete(data: DaumPostcodeData) {
+        // 도로명 주소 + 법정동을 괄호로 추가
+        // 예: "경상북도 경주시 용담로104번길 41 (황성동)"
         const addr = data.roadAddress || data.jibunAddress;
-        const full = data.buildingName ? `${addr} (${data.buildingName})` : addr;
-        onChange(full);
+        const parts: string[] = [];
+        if (data.bname) parts.push(data.bname);
+        if (data.buildingName) parts.push(data.buildingName);
+
+        const suffix = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+        onChange(`${addr}${suffix}`);
         if (layerRef.current) layerRef.current.style.display = 'none';
       },
       onclose() {
@@ -76,7 +86,6 @@ export function AddressSearch({ value, onChange }: AddressSearchProps) {
           onChange={(e) => onChange(e.target.value)}
           className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-base focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
           placeholder="주소를 검색하거나 직접 입력"
-          readOnly={false}
         />
         <button
           type="button"
