@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { MapPin, Star } from 'lucide-react';
+import { MapPin } from 'lucide-react';
+import { DifficultyStars } from './difficulty-stars';
 import { formatRelativeTime } from '@/lib/utils';
 import type { Building as BuildingType } from '@/lib/supabase/types';
 
@@ -22,12 +23,7 @@ export function BuildingCard({ building }: BuildingCardProps) {
           <h3 className="truncate text-[15px] font-bold text-gray-900">
             {displayTitle}
           </h3>
-          {building.difficulty && (
-            <div className="flex shrink-0 items-center gap-0.5">
-              <Star className="h-3 w-3 fill-star text-star" />
-              <span className="text-xs font-bold text-star">{building.difficulty}</span>
-            </div>
-          )}
+          <DifficultyStars value={building.difficulty} size="sm" />
         </div>
 
         {/* 주소 (건물명이 있을 때만 서브로 표시) */}

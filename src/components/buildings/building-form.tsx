@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { DifficultyStars } from './difficulty-stars';
 import { AddressSearch } from './address-search';
+import { WiringInput } from './wiring-input';
 import { createBuilding, updateBuilding } from '@/actions/buildings';
 import toast from 'react-hot-toast';
 import type { Building } from '@/lib/supabase/types';
@@ -140,7 +141,7 @@ export function BuildingForm({ mode, building }: BuildingFormProps) {
           <FormSection title="배선 / 설비 정보" defaultOpen={hasEquipData}>
             <div>
               <label className={labelClass}>배선 구조</label>
-              <textarea value={wiringStructure} onChange={(e) => setWiringStructure(e.target.value)} className={inputClass} rows={2} placeholder="배선 구조 설명" />
+              <WiringInput value={wiringStructure} onChange={setWiringStructure} />
             </div>
             <div>
               <label className={labelClass}>층별 단자함</label>
