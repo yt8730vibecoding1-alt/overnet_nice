@@ -44,8 +44,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 인증된 사용자가 /login 접근 시 메인으로 리다이렉트
-  if (user && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/signup'))) {
+  // 인증된 사용자가 /login 접근 시 메인으로 리다이렉트 (signup은 허용)
+  if (user && request.nextUrl.pathname.startsWith('/login')) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     return NextResponse.redirect(url);
