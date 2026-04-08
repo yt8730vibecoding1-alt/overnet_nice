@@ -6,27 +6,19 @@ import { BuildingCard } from './building-card';
 import { useDebounce } from '@/hooks/use-debounce';
 import { getBuildings } from '@/actions/buildings';
 import { SEARCH_DEBOUNCE_MS } from '@/lib/constants';
-import { Loader2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { Building } from '@/lib/supabase/types';
 
 interface BuildingListProps {
   initialBuildings: Building[];
 }
 
-/**
- * 경주시 행정구역 (4읍 8면 11행정동)
- * 도로명 주소에서 법정동/읍/면을 매칭하기 위한 키워드 목록
- * - 법정동: 주소에 "OO동"으로 나올 수 있음
- * - 도로명: "보문로" → 보문동, "황성로" → 황성동 등으로 매핑
- */
 interface DistrictDef {
   label: string;
-  // 주소에서 이 키워드가 포함되면 해당 지역으로 분류
   keywords: string[];
 }
 
 const DISTRICTS: DistrictDef[] = [
-  // 행정동 (시내)
   { label: '동천동', keywords: ['동천동', '동천'] },
   { label: '황성동', keywords: ['황성동', '황성로', '황성'] },
   { label: '용강동', keywords: ['용강동', '용강로', '용강', '용황'] },
@@ -39,12 +31,10 @@ const DISTRICTS: DistrictDef[] = [
   { label: '월성동', keywords: ['월성동', '월성'] },
   { label: '불국동', keywords: ['불국동', '불국', '진현동'] },
   { label: '보덕동', keywords: ['보덕동', '천군동', '천군', '경감로', '엑스포'] },
-  // 읍
   { label: '안강읍', keywords: ['안강읍', '안강'] },
   { label: '건천읍', keywords: ['건천읍', '건천'] },
   { label: '외동읍', keywords: ['외동읍', '외동'] },
   { label: '감포읍', keywords: ['감포읍', '감포'] },
-  // 면
   { label: '강동면', keywords: ['강동면', '강동', '보불로'] },
   { label: '내남면', keywords: ['내남면', '내남'] },
   { label: '산내면', keywords: ['산내면', '산내'] },
@@ -58,7 +48,6 @@ const DISTRICTS: DistrictDef[] = [
 function getDistrict(building: Building): string {
   const addr = building.address;
 
-  // 1) 괄호 안 법정동 우선 파싱: "...로 123 (황성동)" or "(황성동, 건물명)"
   const parenMatch = addr.match(/\(([^)]+)\)/);
   if (parenMatch) {
     const parenContent = parenMatch[1];
@@ -69,7 +58,6 @@ function getDistrict(building: Building): string {
     }
   }
 
-  // 2) 주소 전체에서 키워드 매칭 (도로명, 지번 등)
   for (const district of DISTRICTS) {
     if (district.keywords.some((kw) => addr.includes(kw))) {
       return district.label;
@@ -88,7 +76,6 @@ function groupByDistrict(buildings: Building[]): [string, Building[]][] {
     groups.get(district)!.push(building);
   }
 
-  // 건물 수 많은 순, 기타는 마지막
   return Array.from(groups.entries()).sort((a, b) => {
     if (a[0] === '기타') return 1;
     if (b[0] === '기타') return -1;
@@ -96,24 +83,24 @@ function groupByDistrict(buildings: Building[]): [string, Building[]][] {
   });
 }
 
-const DISTRICT_COLORS = [
-  'bg-blue-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-purple-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-  'bg-orange-500',
-  'bg-teal-500',
-  'bg-indigo-500',
-  'bg-lime-500',
+const CHIP_COLORS = [
+  { bg: 'bg-blue-50', border: 'border-blue-300', text: 'text-blue-700', activeBg: 'bg-blue-500', activeText: 'text-white' },
+  { bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-700', activeBg: 'bg-emerald-500', activeText: 'text-white' },
+  { bg: 'bg-amber-50', border: 'border-amber-300', text: 'text-amber-700', activeBg: 'bg-amber-500', activeText: 'text-white' },
+  { bg: 'bg-purple-50', border: 'border-purple-300', text: 'text-purple-700', activeBg: 'bg-purple-500', activeText: 'text-white' },
+  { bg: 'bg-rose-50', border: 'border-rose-300', text: 'text-rose-700', activeBg: 'bg-rose-500', activeText: 'text-white' },
+  { bg: 'bg-cyan-50', border: 'border-cyan-300', text: 'text-cyan-700', activeBg: 'bg-cyan-500', activeText: 'text-white' },
+  { bg: 'bg-orange-50', border: 'border-orange-300', text: 'text-orange-700', activeBg: 'bg-orange-500', activeText: 'text-white' },
+  { bg: 'bg-teal-50', border: 'border-teal-300', text: 'text-teal-700', activeBg: 'bg-teal-500', activeText: 'text-white' },
+  { bg: 'bg-indigo-50', border: 'border-indigo-300', text: 'text-indigo-700', activeBg: 'bg-indigo-500', activeText: 'text-white' },
+  { bg: 'bg-lime-50', border: 'border-lime-300', text: 'text-lime-700', activeBg: 'bg-lime-500', activeText: 'text-white' },
 ];
 
 export function BuildingList({ initialBuildings }: BuildingListProps) {
   const [search, setSearch] = useState('');
   const [buildings, setBuildings] = useState(initialBuildings);
   const [isPending, startTransition] = useTransition();
-  const [collapsedDistricts, setCollapsedDistricts] = useState<Set<string>>(new Set());
+  const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search, SEARCH_DEBOUNCE_MS);
 
   useEffect(() => {
@@ -125,14 +112,13 @@ export function BuildingList({ initialBuildings }: BuildingListProps) {
 
   const grouped = useMemo(() => groupByDistrict(buildings), [buildings]);
 
-  const toggleDistrict = (district: string) => {
-    setCollapsedDistricts((prev) => {
-      const next = new Set(prev);
-      if (next.has(district)) next.delete(district);
-      else next.add(district);
-      return next;
-    });
-  };
+  // 선택된 동의 건물 목록
+  const visibleBuildings = useMemo(() => {
+    if (search) return buildings;
+    if (!selectedDistrict) return buildings;
+    const group = grouped.find(([district]) => district === selectedDistrict);
+    return group ? group[1] : [];
+  }, [search, selectedDistrict, buildings, grouped]);
 
   return (
     <div className="flex flex-1 flex-col gap-3">
@@ -148,49 +134,61 @@ export function BuildingList({ initialBuildings }: BuildingListProps) {
             {search ? '검색 결과가 없습니다' : '등록된 건물이 없습니다'}
           </p>
         </div>
-      ) : search ? (
-        <div className="flex flex-col gap-2">
-          {buildings.map((building) => (
-            <BuildingCard key={building.id} building={building} />
-          ))}
-        </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          {grouped.map(([district, items], index) => {
-            const isCollapsed = collapsedDistricts.has(district);
-            const color = DISTRICT_COLORS[index % DISTRICT_COLORS.length];
-
-            return (
-              <section key={district}>
+        <>
+          {/* 읍면동 가로 칩 (검색 중이 아닐 때만) */}
+          {!search && grouped.length > 1 && (
+            <div className="sticky top-[52px] z-[5] -mx-4 bg-gray-50 px-4 pb-2 pt-1">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {/* 전체 칩 */}
                 <button
                   type="button"
-                  onClick={() => toggleDistrict(district)}
-                  className="sticky top-[52px] z-[5] flex w-full items-center gap-2 rounded-lg bg-white px-3 py-2.5 shadow-sm active:bg-gray-50"
+                  onClick={() => setSelectedDistrict(null)}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
+                    selectedDistrict === null
+                      ? 'border-gray-700 bg-gray-700 text-white'
+                      : 'border-gray-300 bg-white text-gray-500'
+                  }`}
                 >
-                  <div className={`h-4 w-1.5 rounded-full ${color}`} />
-                  <h2 className="text-sm font-bold text-gray-700">{district}</h2>
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
-                    {items.length}
-                  </span>
-                  <div className="ml-auto">
-                    {isCollapsed ? (
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400" />
-                    )}
-                  </div>
+                  전체 {buildings.length}
                 </button>
-                {!isCollapsed && (
-                  <div className="mt-1.5 flex flex-col gap-1.5">
-                    {items.map((building) => (
-                      <BuildingCard key={building.id} building={building} />
-                    ))}
-                  </div>
-                )}
-              </section>
-            );
-          })}
-        </div>
+
+                {grouped.map(([district, items], index) => {
+                  const isActive = selectedDistrict === district;
+                  const color = CHIP_COLORS[index % CHIP_COLORS.length];
+
+                  return (
+                    <button
+                      key={district}
+                      type="button"
+                      onClick={() => setSelectedDistrict(isActive ? null : district)}
+                      className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold transition-all ${
+                        isActive
+                          ? `${color.activeBg} ${color.activeText} border-transparent`
+                          : `${color.bg} ${color.border} ${color.text}`
+                      }`}
+                    >
+                      {district} {items.length}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 건물 카드 목록 */}
+          <div className="flex flex-col gap-1.5">
+            {visibleBuildings.map((building) => (
+              <BuildingCard key={building.id} building={building} />
+            ))}
+          </div>
+
+          {selectedDistrict && visibleBuildings.length === 0 && (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-gray-400">{selectedDistrict}에 등록된 건물이 없습니다</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
