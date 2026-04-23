@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, X } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -45,7 +45,7 @@ export function AddressSearch({ value, onChange }: AddressSearchProps) {
 
     const script = document.createElement('script');
     script.id = 'daum-postcode-script';
-    script.src = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+    script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
     script.async = true;
     script.onload = () => { scriptLoaded.current = true; };
     document.head.appendChild(script);
@@ -54,7 +54,7 @@ export function AddressSearch({ value, onChange }: AddressSearchProps) {
   const openPostcode = useCallback(() => {
     if (!window.daum || !layerRef.current) return;
 
-    layerRef.current.style.display = 'block';
+    layerRef.current.parentElement!.style.display = 'block';
 
     new window.daum.Postcode({
       oncomplete(data: DaumPostcodeData) {
@@ -67,10 +67,10 @@ export function AddressSearch({ value, onChange }: AddressSearchProps) {
 
         const suffix = parts.length > 0 ? ` (${parts.join(', ')})` : '';
         onChange(`${addr}${suffix}`);
-        if (layerRef.current) layerRef.current.style.display = 'none';
+        if (layerRef.current?.parentElement) layerRef.current.parentElement.style.display = 'none';
       },
       onclose() {
-        if (layerRef.current) layerRef.current.style.display = 'none';
+        if (layerRef.current?.parentElement) layerRef.current.parentElement.style.display = 'none';
       },
       width: '100%',
       height: '100%',
@@ -98,11 +98,20 @@ export function AddressSearch({ value, onChange }: AddressSearchProps) {
       </div>
 
       {/* 다음 주소 검색 임베드 영역 */}
-      <div
-        ref={layerRef}
-        style={{ display: 'none' }}
-        className="relative mt-2 h-[400px] overflow-hidden rounded-xl border border-gray-300"
-      />
+      <div style={{ display: 'none' }} className="relative mt-2">
+        <button
+          type="button"
+          onClick={() => { if (layerRef.current) layerRef.current.parentElement!.style.display = 'none'; }}
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow"
+          aria-label="주소 검색 닫기"
+        >
+          <X className="h-4 w-4 text-gray-600" />
+        </button>
+        <div
+          ref={layerRef}
+          className="h-[400px] overflow-hidden rounded-xl border border-gray-300"
+        />
+      </div>
     </div>
   );
 }

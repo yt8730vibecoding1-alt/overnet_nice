@@ -54,7 +54,11 @@ export function DongForm({ buildingId, dong, onClose, onSaved }: DongFormProps) 
   const inputClass = 'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-base focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => {
+      const hasChanges = dongName.trim() || equipmentLocation.trim() || wiringStructure.trim() || floorPanels.trim() || notes.trim();
+      if (hasChanges && !window.confirm('변경사항이 있습니다. 닫으시겠습니까?')) return;
+      onClose();
+    }}>
       <div
         className="safe-bottom w-full max-w-lg rounded-t-2xl bg-white p-4"
         onClick={(e) => e.stopPropagation()}

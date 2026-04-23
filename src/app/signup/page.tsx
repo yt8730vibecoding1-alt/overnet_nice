@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -26,8 +27,8 @@ export default function SignupPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('비밀번호는 6자리 이상이어야 합니다.');
+    if (password.length < 8) {
+      setError('비밀번호는 8자리 이상이어야 합니다.');
       return;
     }
 
@@ -103,10 +104,10 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
                 autoComplete="new-password"
                 className={inputClass}
-                placeholder="비밀번호 (6자리 이상)"
+                placeholder="비밀번호 (8자리 이상)"
               />
               <button
                 type="button"
@@ -122,17 +123,26 @@ export default function SignupPage() {
             <label htmlFor="passwordConfirm" className="mb-1 block text-sm font-medium text-gray-700">
               비밀번호 확인
             </label>
-            <input
-              id="passwordConfirm"
-              type={showPassword ? 'text' : 'password'}
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-              required
-              minLength={6}
-              autoComplete="new-password"
-              className={inputClass}
-              placeholder="비밀번호를 다시 입력하세요"
-            />
+            <div className="relative">
+              <input
+                id="passwordConfirm"
+                type={showPasswordConfirm ? 'text' : 'password'}
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className={inputClass}
+                placeholder="비밀번호를 다시 입력하세요"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center"
+              >
+                {showPasswordConfirm ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+              </button>
+            </div>
           </div>
 
           {error && (

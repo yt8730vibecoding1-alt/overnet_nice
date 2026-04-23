@@ -9,7 +9,7 @@ export function SessionGuard() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname === '/login') return;
+    if (pathname === '/login' || pathname === '/signup') return;
 
     const loginDate = localStorage.getItem('overnet_login_date');
     const today = new Date().toISOString().split('T')[0];

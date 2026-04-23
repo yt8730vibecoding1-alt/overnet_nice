@@ -56,17 +56,17 @@ export function BuildingDetail({ building }: BuildingDetailProps) {
       <header className="sticky top-0 z-10 border-b border-gray-200 bg-primary px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-2">
-            <button type="button" onClick={() => router.back()} className="shrink-0 p-2 text-white" aria-label="뒤로 가기">
+            <button type="button" onClick={() => router.back()} className="shrink-0 p-3 text-white" aria-label="뒤로 가기">
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="truncate text-lg font-bold text-white">{displayTitle}</h1>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {building.difficulty && <DifficultyStars value={building.difficulty} size="sm" />}
-            <Link href={`/buildings/${building.id}/edit`} className="p-2 text-white" aria-label="수정">
+            <Link href={`/buildings/${building.id}/edit`} className="p-3 text-white" aria-label="수정">
               <Pencil className="h-5 w-5" />
             </Link>
-            <button type="button" onClick={handleDelete} disabled={deleting} className="p-2 text-white disabled:opacity-50" aria-label="삭제">
+            <button type="button" onClick={handleDelete} disabled={deleting} className="p-3 text-white disabled:opacity-50" aria-label="삭제">
               <Trash2 className="h-5 w-5" />
             </button>
           </div>

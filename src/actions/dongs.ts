@@ -13,7 +13,7 @@ export async function createDong(input: DongInsert): Promise<string> {
     .select('id')
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
   revalidatePath(`/buildings/${input.building_id}`);
   return data.id;
 }
@@ -26,7 +26,7 @@ export async function updateDong(id: string, buildingId: string, input: DongUpda
     .update(input)
     .eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
   revalidatePath(`/buildings/${buildingId}`);
 }
 
@@ -45,7 +45,7 @@ export async function deleteDong(id: string, buildingId: string): Promise<void> 
     .delete()
     .eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
 
   // DB 삭제 성공 후 Storage 파일 정리
   if (photos && photos.length > 0) {

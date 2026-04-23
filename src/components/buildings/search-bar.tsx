@@ -24,6 +24,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         <button
           type="button"
           onClick={() => onChange('')}
+          aria-label="검색어 지우기"
           className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center"
         >
           <X className="h-4 w-4 text-gray-400" />

@@ -15,40 +15,58 @@ interface SerialRoute {
   rooms: string;
 }
 
-/**
- * 저장 형식:
- * - 허브 분배: "[허브분배] 허브위치: 거실 → 각 방으로 분배"
- * - 직렬 연결: "[직렬] 입구방 → 거실 → 안방\n[직렬] 입구방 → 주방 → 옆방"
- * - 직접 입력: 사용자 자유 텍스트
- */
-function parseExisting(value: string): { type: WiringType; hubLocation: string; routes: SerialRoute[]; custom: string } {
-  if (!value) return { type: 'custom', hubLocation: '', routes: [{ id: '1', rooms: '' }], custom: '' };
+interface WiringData {
+  type: WiringType;
+  hubLocation?: string;
+  routes?: string[];
+  custom?: string;
+}
 
+function parseExisting(value: string): { type: WiringType; hubLocation: string; routes: SerialRoute[]; custom: string } {
+  const empty = { type: 'custom' as WiringType, hubLocation: '', routes: [{ id: '1', rooms: '' }], custom: '' };
+  if (!value) return empty;
+
+  // JSON 형식 (새 포맷)
+  if (value.startsWith('{')) {
+    try {
+      const data: WiringData = JSON.parse(value);
+      return {
+        type: data.type,
+        hubLocation: data.hubLocation ?? '',
+        routes: data.routes?.length
+          ? data.routes.map((r, i) => ({ id: String(i + 1), rooms: r }))
+          : [{ id: '1', rooms: '' }],
+        custom: data.custom ?? '',
+      };
+    } catch {
+      return { ...empty, custom: value };
+    }
+  }
+
+  // 레거시 텍스트 호환
   if (value.startsWith('[허브분배]')) {
     const hubLocation = value.replace('[허브분배] ', '').replace('허브위치: ', '').replace(/ → 각 방으로 분배$/, '');
     return { type: 'hub', hubLocation, routes: [{ id: '1', rooms: '' }], custom: '' };
   }
-
   if (value.includes('[직렬]')) {
     const lines = value.split('\n').filter((l) => l.startsWith('[직렬]'));
-    const routes = lines.map((line, i) => ({
-      id: String(i + 1),
-      rooms: line.replace('[직렬] ', ''),
-    }));
+    const routes = lines.map((line, i) => ({ id: String(i + 1), rooms: line.replace('[직렬] ', '') }));
     return { type: 'serial', hubLocation: '', routes: routes.length > 0 ? routes : [{ id: '1', rooms: '' }], custom: '' };
   }
 
-  return { type: 'custom', hubLocation: '', routes: [{ id: '1', rooms: '' }], custom: value };
+  return { ...empty, custom: value };
 }
 
 function serialize(type: WiringType, hubLocation: string, routes: SerialRoute[], custom: string): string {
-  if (type === 'hub') {
-    return hubLocation.trim() ? `[허브분배] 허브위치: ${hubLocation.trim()} → 각 방으로 분배` : '';
+  if (type === 'hub' && hubLocation.trim()) {
+    const data: WiringData = { type: 'hub', hubLocation: hubLocation.trim() };
+    return JSON.stringify(data);
   }
   if (type === 'serial') {
-    const valid = routes.filter((r) => r.rooms.trim());
+    const valid = routes.filter((r) => r.rooms.trim()).map((r) => r.rooms.trim());
     if (valid.length === 0) return '';
-    return valid.map((r) => `[직렬] ${r.rooms.trim()}`).join('\n');
+    const data: WiringData = { type: 'serial', routes: valid };
+    return JSON.stringify(data);
   }
   return custom;
 }

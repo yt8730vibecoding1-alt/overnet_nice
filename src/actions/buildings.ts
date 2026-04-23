@@ -19,7 +19,7 @@ export async function getBuildings(query?: string): Promise<Building[]> {
 
   const { data, error } = await dbQuery.limit(50);
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
   return data ?? [];
 }
 
@@ -32,7 +32,7 @@ export async function getBuilding(id: string): Promise<BuildingWithDetails> {
     .eq('id', id)
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
   return data as BuildingWithDetails;
 }
 
@@ -45,7 +45,7 @@ export async function createBuilding(input: BuildingInsert): Promise<string> {
     .select('id')
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
   revalidatePath('/');
   return data.id;
 }
@@ -58,7 +58,7 @@ export async function updateBuilding(id: string, input: BuildingUpdate): Promise
     .update(input)
     .eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
   revalidatePath('/');
   revalidatePath(`/buildings/${id}`);
 }
@@ -78,7 +78,7 @@ export async function deleteBuilding(id: string): Promise<void> {
     .delete()
     .eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
 
   // DB 삭제 성공 후 Storage 파일 정리
   if (photos && photos.length > 0) {

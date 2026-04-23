@@ -2,6 +2,7 @@
 
 import { createAuthenticatedClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { MAX_PHOTOS_PER_BUILDING } from '@/lib/constants';
 
 interface CreatePhotoInput {
   building_id: string;
@@ -13,6 +14,15 @@ interface CreatePhotoInput {
 
 export async function createPhoto(input: CreatePhotoInput): Promise<string> {
   const supabase = await createAuthenticatedClient();
+
+  const { count } = await supabase
+    .from('photos')
+    .select('*', { count: 'exact', head: true })
+    .eq('building_id', input.building_id);
+
+  if ((count ?? 0) >= MAX_PHOTOS_PER_BUILDING) {
+    throw new Error('건물당 최대 10장까지 업로드 가능합니다');
+  }
 
   const { data, error } = await supabase
     .from('photos')
@@ -26,7 +36,7 @@ export async function createPhoto(input: CreatePhotoInput): Promise<string> {
     .select('id')
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
   revalidatePath(`/buildings/${input.building_id}`);
   return data.id;
 }
@@ -49,7 +59,7 @@ export async function deletePhoto(id: string, buildingId: string): Promise<void>
     .delete()
     .eq('id', id);
 
-  if (error) throw new Error(error.message);
+  if (error) { console.error('DB error:', error); throw new Error('처리 중 오류가 발생했습니다'); }
 
   // DB 삭제 성공 후 Storage 파일 삭제
   await supabase.storage.from('building-photos').remove([photo.storage_path]);

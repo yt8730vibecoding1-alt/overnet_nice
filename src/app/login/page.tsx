@@ -38,6 +38,7 @@ export default function LoginPage() {
       return;
     }
 
+    localStorage.setItem('overnet_login_date', new Date().toISOString().split('T')[0]);
     router.push('/');
     router.refresh();
   };
